@@ -19,7 +19,7 @@ export const EventSchedule = () => {
       description: t('schedule.welcome-drinks'),
     },
     {
-      time: '4:00 PM',
+      time: '10:30 AM',
       event: t('schedule.wedding-ceremony'),
       description: t('schedule.vows'),
     },
