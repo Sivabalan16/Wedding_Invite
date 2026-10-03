@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface LetterAnimationProps {
   onOpen: () => void;
   guestName?: string;
+  coupleName?: string;
 }
 
 // Particle definitions
@@ -18,6 +19,8 @@ interface Petal {
   duration: number;
   color: string;
   rotation: number;
+  explodeX: number;
+  explodeY: number;
 }
 
 interface Spark {
@@ -30,25 +33,34 @@ interface Spark {
   scale: number;
 }
 
-export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestName }) => {
+export const LetterAnimation: React.FC<LetterAnimationProps> = ({
+  onOpen,
+  guestName,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   // Particles
   const [petals, setPetals] = useState<Petal[]>([]);
   const [sparks, setSparks] = useState<Spark[]>([]);
 
   useEffect(() => {
-    // Generate Petals
+    // Generate Petals with pre-calculated explosion trajectory
     const petalColors = ['#e11d48', '#fbbf24', '#f43f5e', '#f59e0b'];
-    const generatedPetals: Petal[] = Array.from({ length: 30 }).map((_, i) => ({ // Increased count for explosion
-      id: i,
-      x: Math.random() * 100,
-      size: Math.random() * 12 + 10,
-      delay: Math.random() * 4,
-      duration: Math.random() * 6 + 7,
-      color: petalColors[Math.floor(Math.random() * petalColors.length)],
-      rotation: Math.random() * 360,
-    }));
+    const generatedPetals: Petal[] = Array.from({ length: 30 }).map((_, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 200 + Math.random() * 300;
+      return {
+        id: i,
+        x: Math.random() * 100,
+        size: Math.random() * 12 + 10,
+        delay: Math.random() * 4,
+        duration: Math.random() * 6 + 7,
+        color: petalColors[Math.floor(Math.random() * petalColors.length)],
+        rotation: Math.random() * 360,
+        explodeX: Math.cos(angle) * radius,
+        explodeY: Math.sin(angle) * radius,
+      };
+    });
 
     // Generate Golden Sparks
     const generatedSparks: Spark[] = Array.from({ length: 12 }).map((_, i) => ({
@@ -67,10 +79,9 @@ export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestN
 
   const handleOpen = () => {
     setIsOpen(true);
-    // Synced delay for Petal Explode
     setTimeout(() => {
       onOpen();
-    }, 1300); 
+    }, 1300);
   };
 
   return (
@@ -79,10 +90,9 @@ export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestN
         <motion.div
           key="entry-container"
           initial={{ opacity: 1, backgroundColor: '#18080c' }}
-          // Brief hold, then fade.
-          exit={{ 
-            opacity: [1, 1, 1, 0], 
-            transition: { duration: 1.3, ease: 'easeIn', times: [0, 0.4, 0.8, 1] } 
+          exit={{
+            opacity: [1, 1, 1, 0],
+            transition: { duration: 1.3, ease: 'easeIn', times: [0, 0.4, 0.8, 1] },
           }}
           className="relative flex min-h-screen w-full flex-col items-center justify-between overflow-hidden py-10 px-4 select-none"
         >
@@ -90,13 +100,17 @@ export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestN
           <motion.div
             initial={{ scale: 1 }}
             animate={{ scale: 1.06 }}
-            transition={{ duration: 18, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
-            // Fades on exit
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              repeatType: 'reverse',
+              ease: 'easeInOut',
+            }}
             exit={{ opacity: 0, transition: { duration: 0.6 } }}
             className="absolute inset-0 z-0 h-full w-full"
           >
             <Image
-              src="/temple-gopuram.png" // MUST match your public filename
+              src="/temple-gopuram.png"
               alt="Temple Gopuram"
               fill
               priority
@@ -104,13 +118,13 @@ export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestN
             />
           </motion.div>
 
-          {/* Vignette gradients to preserve contrast - fade quickly on exit */}
-          <motion.div 
+          {/* Vignette gradients to preserve contrast */}
+          <motion.div
             exit={{ opacity: 0, transition: { duration: 0.4 } }}
-            className="absolute inset-0 z-[1] bg-gradient-to-b from-black/80 via-black/20 to-black/85 pointer-events-none" 
+            className="absolute inset-0 z-[1] bg-gradient-to-b from-black/80 via-black/20 to-black/85 pointer-events-none"
           />
 
-          {/* 3. The Falling Flower Petals Layer -> Updates for EXPLODE animation */}
+          {/* Falling Flower Petals Layer with Explosion Exit */}
           <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none">
             {petals.map((petal) => (
               <motion.div
@@ -133,31 +147,16 @@ export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestN
                   repeat: Infinity,
                   ease: 'linear',
                 }}
-                // NEW: Petal Gather and Explode
-                exit={{ 
-                  // 1. Gather to Center (Cloud)
-                  top: [null, '50%', '50%'], 
-                  left: [null, '50%', '50%'],
-                  scale: [1, 1.5, 0.5], // swells then cloud compacts
-                  opacity: [1, 1, 1],
-                  
-                  // 2. Explode and Fade
-                  ...((() => {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = 200 + Math.random() * 300; // Explode radius
-                    return {
-                      x: [0, 0, Math.cos(angle) * radius], 
-                      y: [0, 0, Math.sin(angle) * radius],
-                      scale: [null, null, 0], // Swells, Cloud, Vanishes
-                      opacity: [null, null, 0] // Swells, Cloud, Fades
-                    }
-                  })()),
-
-                  transition: { 
-                    duration: 1.3, // Match full exit duration
-                    times: [0, 0.2, 0.4, 0.8, 1], // Timing of phases
-                    ease: ['easeIn', 'easeIn', 'easeOut', 'linear']
-                  } 
+                exit={{
+                  x: [0, 0, petal.explodeX],
+                  y: [0, 0, petal.explodeY],
+                  scale: [1, 1.4, 0],
+                  opacity: [1, 1, 0],
+                  transition: {
+                    duration: 1.3,
+                    times: [0, 0.3, 1],
+                    ease: 'easeOut',
+                  },
                 }}
                 style={{
                   width: petal.size,
@@ -171,7 +170,7 @@ export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestN
             ))}
           </div>
 
-          {/* Golden Sparks Layer (Only renders if client-generated data exists) */}
+          {/* Golden Sparks Layer */}
           <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none">
             {sparks.map((spark) => (
               <motion.div
@@ -193,19 +192,16 @@ export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestN
                   repeat: Infinity,
                   ease: 'easeOut',
                 }}
-                exit={{ 
-                  // Sparks follow petal dynamics (gather then vanish)
-                  top: [null, '50%'], 
-                  left: [null, '50%'],
+                exit={{
                   opacity: 0,
-                  transition: { duration: 0.4 } 
+                  transition: { duration: 0.4 },
                 }}
                 className="absolute h-1.5 w-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#fde047]"
               />
             ))}
           </div>
 
-          {/* Top Header Content - fade quicker on exit */}
+          {/* Top Header Content */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -228,10 +224,10 @@ export const LetterAnimation: React.FC<LetterAnimationProps> = ({ onOpen, guestN
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ 
-              opacity: 0, 
-              scale: 0.8, // shrinks slightly
-              transition: { duration: 0.5 } 
+            exit={{
+              opacity: 0,
+              scale: 0.8,
+              transition: { duration: 0.5 },
             }}
             transition={{ delay: 0.3, duration: 0.8 }}
             className="relative z-10 flex flex-col items-center text-center mb-6"
