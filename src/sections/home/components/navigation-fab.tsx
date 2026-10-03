@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
+import confetti from 'canvas-confetti';
 
 interface NavigationFABProps {
   activeSection: string;
@@ -21,10 +22,71 @@ export default function NavigationFAB({
   activeSection,
   onScrollToSection,
 }: NavigationFABProps) {
+  const triggerDiwaliSkyshots = () => {
+    const duration = 2.5 * 1000;
+    const animationEnd = Date.now() + duration;
+    const festiveColors = [
+      '#f59e0b',
+      '#ec4899',
+      '#ef4444',
+      '#10b981',
+      '#8b5cf6',
+      '#fbbf24',
+      '#06b6d4',
+    ];
+
+    // 1. Initial Central Big Burst
+    confetti({
+      particleCount: 60,
+      spread: 90,
+      origin: { y: 0.7 },
+      colors: festiveColors,
+      startVelocity: 45,
+      scalar: 1.1,
+      zIndex: 99999,
+    });
+
+    // 2. Rising & Exploding Skyshots across the screen (Left & Right)
+    const interval: ReturnType<typeof setInterval> = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 30 * (timeLeft / duration);
+
+      // Left Skyshot Rocket Burst
+      confetti({
+        particleCount,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0.15, y: 0.75 },
+        colors: festiveColors,
+        startVelocity: 55,
+        zIndex: 99999,
+      });
+
+      // Right Skyshot Rocket Burst
+      confetti({
+        particleCount,
+        angle: 120,
+        spread: 55,
+        origin: { x: 0.85, y: 0.75 },
+        colors: festiveColors,
+        startVelocity: 55,
+        zIndex: 99999,
+      });
+    }, 250);
+  };
+
   const handleNextSection = () => {
+    // Fire Diwali Skyshots animation
+    triggerDiwaliSkyshots();
+
+    // Scroll to next section
     const currentIndex = sections.indexOf(activeSection);
     const nextSection = sections[(currentIndex + 1) % sections.length];
-
     onScrollToSection(nextSection);
   };
 
@@ -32,8 +94,8 @@ export default function NavigationFAB({
     <motion.div
       initial={{ opacity: 0, scale: 0, y: 100 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.8, type: 'spring', stiffness: 200 }}
-      className="fixed bottom-6 right-6 z-50"
+      transition={{ duration: 0.6, delay: 0.8, type: 'spring' as const, stiffness: 200 }}
+      className="fixed bottom-6 right-6 z-50 select-none"
     >
       {/* Progress Ring */}
       <div className="relative">
@@ -83,11 +145,12 @@ export default function NavigationFAB({
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative w-14 h-14 bg-white/95 backdrop-blur-md border border-white/20 rounded-full shadow-2xl hover:shadow-rose-200/50 transition-all duration-300 group overflow-hidden"
+          className="relative w-14 h-14 bg-white/95 backdrop-blur-md border border-white/20 rounded-full shadow-2xl hover:shadow-rose-200/50 transition-all duration-300 group overflow-hidden cursor-pointer"
           onClick={handleNextSection}
+          aria-label="Navigate to next section"
         >
           {/* Button background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Animated background effect */}
           <motion.div
@@ -122,7 +185,7 @@ export default function NavigationFAB({
 
           {/* Ripple effect on click */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-rose-400/30 to-pink-400/30 rounded-full"
+            className="absolute inset-0 bg-gradient-to-r from-rose-400/30 to-pink-400/30 rounded-full pointer-events-none"
             initial={{ scale: 0, opacity: 0 }}
             whileTap={{ scale: 2, opacity: [0, 0.3, 0] }}
             transition={{ duration: 0.4 }}
@@ -143,7 +206,7 @@ export default function NavigationFAB({
           </div>
 
           {/* Tooltip arrow */}
-          <div className="absolute left-full top-1/2 -translate-y-1/2 border-l-4 border-l-gray-800/90 border-y-4 border-y-transparent"></div>
+          <div className="absolute left-full top-1/2 -translate-y-1/2 border-l-4 border-l-gray-800/90 border-y-4 border-y-transparent" />
         </motion.div>
       </div>
     </motion.div>
