@@ -3,7 +3,7 @@ export const WEDDING_CONFIG = {
   bride: {
     name: 'ஹமி',
     fullName: 'ஹம்சினி ஷர்மிளா.பெ',
-    photo: '/assets/images/Bride.JPEg',
+    photo: '/assets/images/Bride.jpeg',
   },
   groom: {
     name: 'சசி',

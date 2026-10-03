@@ -28,7 +28,7 @@ import { NAVIGATION_SECTIONS, WEDDING_CONFIG } from '@/constants';
 // ==========================================
 const AVATAR_SETTINGS = {
   show: true, // Toggle true / false to display or hide
-  imageSrc: '/avatar.PNG', // Image in /public folder (e.g., public/avatar.PNG)
+  imageSrc: '/avatar.png', // Image in /public folder (e.g., public/avatar.PNG)
   altText: 'Created with Love',
   name: 'Created by Sivabalan T', // Name shown on hover
   tooltip: 'With Best Wishes 💖', // Small subtitle/greeting
