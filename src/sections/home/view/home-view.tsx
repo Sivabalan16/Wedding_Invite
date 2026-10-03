@@ -93,7 +93,7 @@ export default function HomeView() {
       />
 
       {/* 3. SCROLLING CARDS CONTAINER (Scrolls upward seamlessly) */}
-      <main className="relative z-10 flex flex-col">
+      <main className="relative z-10 flex flex-col transform-gpu will-change-transform">
         {/* Hero Section */}
         <section id="hero" className="relative w-full">
           <HeroSection
